@@ -1,0 +1,44 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CLOSED
+}
+
+model PeerRequest {
+  id         String        @id @default(cuid())
+  title      String
+  content    String
+  course     String?
+  isUrgent   Boolean       @default(false)
+  anonymous  Boolean       @default(false)
+  status     RequestStatus @default(OPEN)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  tags       TagOnRequest[]
+  // You can add requesterId later when you add auth
+}
+
+model Tag {
+  id      String          @id @default(cuid())
+  name    String          @unique
+  color   String?
+  requests TagOnRequest[]
+}
+
+model TagOnRequest {
+  requestId String
+  tagId     String
+  request   PeerRequest @relation(fields: [requestId], references: [id])
+  tag       Tag        @relation(fields: [tagId], references: [id])
+  @@id([requestId, tagId])
+}
